@@ -1,0 +1,347 @@
+<!-- Chosen Palette: Executive Navy & Emerald (Primary: #1E293B, Accent: #10B981, Highlight: #F59E0B) -->
+<!-- Application Structure Plan: 
+    This SPA is designed as a "Story-driven Dashboard." 
+    1. Hero: Problem-Solution statement.
+    2. Market Pain Section: Donut chart showing the massive return rate gap.
+    3. Performance Section: Grouped bar chart showing the Value Proposition (Before vs After VTO).
+    4. Product Advantage: Radar chart comparing technical accuracy against competitors.
+    5. Financials: Interactive Pricing Cards.
+    6. Roadmap: Vertical HTML timeline for Future Scope.
+-->
+<!-- Visualization & Content Choices:
+    1. Market Gap: Donut Chart (Chart.js). Visualizes the "Trillion Dollar Problem."
+    2. Retail Impact: Bar Chart (Chart.js). Shows the 25% return reduction and 20% ATC increase.
+    3. Tech Specs: Radar Chart (Chart.js). Compares Latent Diffusion vs. GANs.
+    4. Roadmap: Step-indicator timeline using Tailwind.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTO Business Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 320px;
+            max-height: 400px;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+
+<body class="pb-20">
+    <a href="index.html"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.2em;">🏠</span> Back to Home
+    </a>
+
+    <!-- Header Section -->
+    <header class="gradient-bg text-white py-20 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">VTO Startup Strategy</h1>
+            <p class="text-lg md:text-xl text-slate-300 leading-relaxed">
+                Visualizing the transition from <span class="text-amber-400 font-bold">Size Anxiety</span> to <span
+                    class="text-emerald-400 font-bold">Purchase Confidence</span>.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 -mt-10">
+
+        <!-- Key Metrics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2">Target Return Reduction
+                </p>
+                <p class="text-4xl font-extrabold text-emerald-600">25%</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2">ATC Conversion Lift</p>
+                <p class="text-4xl font-extrabold text-indigo-600">20%</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2">Processing Latency</p>
+                <p class="text-4xl font-extrabold text-amber-500">&lt; 5s</p>
+            </div>
+        </div>
+
+        <!-- Section 1: The Problem & Solution -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-2xl font-bold mb-2">The Market Friction</h2>
+                <p class="text-slate-500 mb-8">The $1 Trillion Problem: Visualizing why customers return apparel.</p>
+                <div class="chart-container">
+                    <canvas id="returnRateChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-2xl font-bold mb-2">Value Proposition Impact</h2>
+                <p class="text-slate-500 mb-8">How VTO integration changes key retail metrics.</p>
+                <div class="chart-container">
+                    <canvas id="impactChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Competitive Advantage -->
+        <div class="bg-slate-900 rounded-3xl p-8 md:p-12 mb-16 text-white overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6">Competitive Advantage</h2>
+                    <p class="text-slate-400 mb-8 leading-relaxed">
+                        Our Latent-Diffusion pipeline outperforms legacy GAN-based competitors by maintaining high
+                        fidelity in complex drapes and textures.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs mt-1">
+                                ✓</div>
+                            <p class="text-slate-300 text-sm"><span class="font-bold text-white">Accuracy:</span>
+                                Handles silk, oversized items, and brand logos without distortion.</p>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs mt-1">
+                                ✓</div>
+                            <p class="text-slate-300 text-sm"><span class="font-bold text-white">Speed:</span> Optimized
+                                GPU path keeps shopper engagement high.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
+                    <div class="chart-container">
+                        <canvas id="techRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Revenue Model -->
+        <h2 class="text-3xl font-bold text-center mb-10">B2B SaaS Revenue Model</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <!-- Startup -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 card-hover">
+                <h3 class="font-bold text-slate-500 uppercase tracking-widest text-xs mb-4">Tier 1: Startup</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    <span class="text-4xl font-extrabold">$299</span>
+                    <span class="text-slate-400">/mo</span>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600 mb-8">
+                    <li>• 1,000 try-ons included</li>
+                    <li>• Standard Support</li>
+                    <li>• One-line SDK integration</li>
+                </ul>
+                <button class="w-full py-3 rounded-xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200">Start
+                    Free Trial</button>
+            </div>
+
+            <!-- Growth -->
+            <div class="bg-white p-8 rounded-3xl border-2 border-indigo-600 card-hover relative">
+                <div
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-bold">
+                    BEST VALUE</div>
+                <h3 class="font-bold text-slate-500 uppercase tracking-widest text-xs mb-4">Tier 2: Growth</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    <span class="text-4xl font-extrabold">$999</span>
+                    <span class="text-slate-400">/mo</span>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600 mb-8">
+                    <li>• 5,000 try-ons included</li>
+                    <li>• Advanced Analytics</li>
+                    <li>• Priority GPU Queue</li>
+                </ul>
+                <button
+                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200">Scale
+                    Now</button>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 card-hover">
+                <h3 class="font-bold text-slate-500 uppercase tracking-widest text-xs mb-4">Tier 3: Enterprise</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    <span class="text-4xl font-extrabold">Custom</span>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600 mb-8">
+                    <li>• Custom API Credits</li>
+                    <li>• White-label Integration</li>
+                    <li>• Dedicated Account Manager</li>
+                </ul>
+                <button class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">Contact
+                    Sales</button>
+            </div>
+        </div>
+
+        <!-- Section 4: Future Roadmap -->
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Future Roadmap</h2>
+            <div
+                class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+
+                <!-- Item 1 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-100 text-slate-600 font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        1</div>
+                    <div
+                        class="w-[calc(100%-4rem)] md:w-[45%] p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <time class="font-bold text-indigo-600 text-xs uppercase">Phase 1</time>
+                        <h4 class="font-bold text-slate-900">Video Try-On</h4>
+                        <p class="text-sm text-slate-500 mt-1">Moving to 5-second catwalk clips to show fabric drape and
+                            motion.</p>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-100 text-slate-600 font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        2</div>
+                    <div
+                        class="w-[calc(100%-4rem)] md:w-[45%] p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <time class="font-bold text-indigo-600 text-xs uppercase">Phase 2</time>
+                        <h4 class="font-bold text-slate-900">Size Engine</h4>
+                        <p class="text-sm text-slate-500 mt-1">Integrating body measurements to suggest exact SKU sizes
+                            automatically.</p>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-100 text-slate-600 font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        3</div>
+                    <div
+                        class="w-[calc(100%-4rem)] md:w-[45%] p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <time class="font-bold text-indigo-600 text-xs uppercase">Phase 3</time>
+                        <h4 class="font-bold text-slate-900">AR Smart Mirrors</h4>
+                        <p class="text-sm text-slate-500 mt-1">Deploying technology into physical retail store
+                            environments.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data Configuration
+        const charts = {};
+
+        // 1. Return Rate Donut
+        const ctxReturn = document.getElementById('returnRateChart').getContext('2d');
+        charts.return = new Chart(ctxReturn, {
+            type: 'doughnut',
+            data: {
+                labels: ['Online Apparel Returns', 'In-Store Returns', 'Direct Conversions'],
+                datasets: [{
+                    data: [35, 9, 56],
+                    backgroundColor: ['#F59E0B', '#94A3B8', '#10B981'],
+                    hoverOffset: 15,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold' } } }
+                }
+            }
+        });
+
+        // 2. Impact Comparison Bar
+        const ctxImpact = document.getElementById('impactChart').getContext('2d');
+        charts.impact = new Chart(ctxImpact, {
+            type: 'bar',
+            data: {
+                labels: ['Return Rate (%)', 'Add-to-Cart (%)'],
+                datasets: [
+                    { label: 'Without VTO', data: [35, 12], backgroundColor: '#E2E8F0', borderRadius: 8 },
+                    { label: 'With VTO Startup', data: [26.2, 14.4], backgroundColor: '#10B981', borderRadius: 8 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 3. Tech Radar
+        const ctxRadar = document.getElementById('techRadarChart').getContext('2d');
+        charts.radar = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Texture Accuracy', 'Logo Preservation', 'Drape Physics', 'Speed', 'Cost Scalability'],
+                datasets: [
+                    {
+                        label: 'VTO Startup (Diffusion)',
+                        data: [95, 90, 85, 90, 80],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        pointBackgroundColor: '#10B981'
+                    },
+                    {
+                        label: 'Legacy GANs',
+                        data: [60, 45, 55, 75, 85],
+                        borderColor: '#94A3B8',
+                        backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                        pointBackgroundColor: '#94A3B8'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        pointLabels: { color: '#94A3B8', font: { size: 10 } },
+                        ticks: { display: false }
+                    }
+                },
+                plugins: { legend: { labels: { color: '#FFF' } } }
+            }
+        });
+    </script>
+</body>
+
+</html>

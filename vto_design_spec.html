@@ -1,0 +1,710 @@
+<!-- Chosen Palette: Electric Blue (#2563EB), Slate Gray (#64748B), Soft White (#F8FAFC) - As defined in Source Report -->
+<!-- Application Structure Plan: A "Design System & Prototype Explorer" dashboard. 
+     Structure:
+     1. Sidebar Navigation: To toggle between different modules of the specification (Overview, Design System, User Flows, Merchant Tools).
+     2. Module - Design System: Interactive color swatches and typography previews to visualize the 'Clean Tech' aesthetic.
+     3. Module - User Journey (Try-On): A fully interactive stepper component simulating the 'Upload -> Select -> Generate' flow defined in the spec.
+     4. Module - Result Experience: A custom-built, interactive 'Before/After' image slider to demonstrate the 'Aha Moment' requirement.
+     5. Module - Merchant Dashboard: A Chart.js visualization of the analytics requirements and an interactive inventory table.
+     Why: This structure allows stakeholders to not just read requirements but 'feel' the intended UX. -->
+<!-- Visualization & Content Choices:
+     1. Design System: CSS Grid of color cards with click-to-copy interaction. Goal: Inform/Reference.
+     2. Try-On Flow: Interactive Stepper (JS State). Goal: Change/Process Flow. Visualizes the 3-step logic.
+     3. Analytics: Chart.js Line Chart. Goal: Inform/Trends. Visualizes the 'Try-On Activity' metric.
+     4. Result Slider: Custom HTML/CSS/JS Slider. Goal: Compare. Demonstrates the core value prop visualization.
+     5. Feature Lists: Card grids with icons. Goal: Organize. Breaks down text-heavy requirements into digestible chunks.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Virtual Try-On - UI/UX Design Spec Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB', // Electric Blue
+                        secondary: '#64748B', // Slate Gray
+                        background: '#F8FAFC', // Soft White
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            max-height: 400px;
+            margin: 0 auto;
+        }
+
+        .nav-item.active {
+            background-color: #EFF6FF;
+            color: #2563EB;
+            border-right: 3px solid #2563EB;
+        }
+
+        /* Custom Slider Logic */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .slider-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #ffffff;
+            cursor: ew-resize;
+            z-index: 10;
+        }
+
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #2563EB;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+    <a href="index.html"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.2em;">🏠</span> Back to Home
+    </a>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col z-20 hidden md:flex">
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-xl font-bold text-primary tracking-tight">VTO Design Spec</h1>
+            <p class="text-xs text-secondary mt-1">Interactive Documentation</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button onclick="navTo('overview')" id="nav-overview"
+                        class="nav-item active w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Overview
+                        & System</button></li>
+                <li><button onclick="navTo('journey')" id="nav-journey"
+                        class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">User
+                        Journey (Try-On)</button></li>
+                <li><button onclick="navTo('result')" id="nav-result"
+                        class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Result
+                        Experience</button></li>
+                <li><button onclick="navTo('merchant')" id="nav-merchant"
+                        class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Merchant
+                        Dashboard</button></li>
+            </ul>
+        </nav>
+        <div class="p-4 bg-gray-50 text-xs text-center text-gray-400">
+            Generated from vto_ui_ux_spec.md
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-white border-b z-30 px-4 py-3 flex justify-between items-center">
+        <span class="font-bold text-primary">VTO Spec</span>
+        <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+            class="text-gray-600">☰</button>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden fixed inset-0 bg-white z-40 pt-16 px-4 md:hidden">
+        <button onclick="navTo('overview'); toggleMobile();"
+            class="block w-full text-left py-3 border-b">Overview</button>
+        <button onclick="navTo('journey'); toggleMobile();" class="block w-full text-left py-3 border-b">User
+            Journey</button>
+        <button onclick="navTo('result'); toggleMobile();" class="block w-full text-left py-3 border-b">Result
+            Experience</button>
+        <button onclick="navTo('merchant'); toggleMobile();" class="block w-full text-left py-3 border-b">Merchant
+            Dashboard</button>
+        <button onclick="toggleMobile()" class="mt-4 w-full bg-gray-100 py-2 rounded">Close</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-background p-4 md:p-8 pt-16 md:pt-8 relative">
+
+        <!-- SECTION: Overview & Design System -->
+        <section id="section-overview" class="max-w-5xl mx-auto space-y-8 animate-fade">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <span class="inline-block px-3 py-1 bg-blue-50 text-primary text-xs font-bold rounded-full mb-4">Core
+                    Principles</span>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Design System Overview</h2>
+                <p class="text-secondary mb-8 leading-relaxed">
+                    This section defines the visual foundation for the AI Virtual Try-On platform.
+                    The aesthetic focuses on "Clarity over Flash" to establish trust in the AI-generated results.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Palette -->
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-gray-700">Color Palette</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                                title="Copy">
+                                <div class="w-12 h-12 rounded-lg bg-primary shadow-sm"></div>
+                                <div>
+                                    <p class="font-bold text-gray-800">Electric Blue</p>
+                                    <p class="text-xs text-gray-500 font-mono">#2563EB</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                                <div class="w-12 h-12 rounded-lg bg-secondary shadow-sm"></div>
+                                <div>
+                                    <p class="font-bold text-gray-800">Slate Gray</p>
+                                    <p class="text-xs text-gray-500 font-mono">#64748B</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                                <div class="w-12 h-12 rounded-lg bg-background border border-gray-200 shadow-sm"></div>
+                                <div>
+                                    <p class="font-bold text-gray-800">Soft White</p>
+                                    <p class="text-xs text-gray-500 font-mono">#F8FAFC</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typography -->
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-gray-700">Typography: Inter</h3>
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
+                            <p class="text-3xl font-bold text-gray-900">Heading 1</p>
+                            <p class="text-xl font-semibold text-gray-800">Heading 2</p>
+                            <p class="text-base text-gray-600">Body text should be clean and high legibility. Used for
+                                instructions and AI tips.</p>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Label / Caption</p>
+                        </div>
+                    </div>
+
+                    <!-- Principles -->
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-gray-700">UX Principles</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary mt-1">✨</span>
+                                <span class="text-sm text-secondary"><strong>Clarity over Flash:</strong> Whitespace
+                                    highlights results.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary mt-1">🛡️</span>
+                                <span class="text-sm text-secondary"><strong>Trust:</strong> Clearly mark "AI-Generated"
+                                    content.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary mt-1">🧭</span>
+                                <span class="text-sm text-secondary"><strong>Guidance:</strong> Step-by-step indicators
+                                    for complex tasks.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Landing Page Spec Visualization -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">1. Landing Page Structure</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-4 border-l-4 border-primary pl-4">
+                        <h4 class="text-lg font-bold">Hero Section Spec</h4>
+                        <p class="text-sm text-secondary">Layout: Single-column scroll with sticky nav.</p>
+                        <div class="space-y-2">
+                            <div class="p-2 bg-blue-50 text-blue-800 text-xs rounded font-mono">Headline: "Try on the
+                                future of fashion."</div>
+                            <div class="p-2 bg-blue-50 text-blue-800 text-xs rounded font-mono">CTA: "Launch Demo"
+                                (Primary Button)</div>
+                        </div>
+                    </div>
+                    <!-- Wireframe Visualization -->
+                    <div
+                        class="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col justify-center items-center relative overflow-hidden group">
+                        <div class="absolute inset-0 flex">
+                            <div class="w-1/2 bg-gray-200 flex items-center justify-center text-gray-400 text-xs">Model
+                                (Casual)</div>
+                            <div class="w-1/2 bg-blue-100 flex items-center justify-center text-blue-400 text-xs">Model
+                                (Dress)</div>
+                        </div>
+                        <div class="z-10 bg-white/90 p-4 rounded shadow-lg text-center backdrop-blur-sm">
+                            <p class="font-bold text-gray-800 text-sm">Split-Screen Visual</p>
+                            <p class="text-xs text-gray-500">Comparing styles instantly</p>
+                        </div>
+                        <div class="absolute bottom-2 right-2 text-[10px] bg-gray-800 text-white px-2 py-1 rounded">
+                            Wireframe Mockup</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: User Journey (Try-On) -->
+        <section id="section-journey" class="hidden max-w-5xl mx-auto space-y-8 animate-fade">
+            <header>
+                <h2 class="text-3xl font-bold text-gray-800">2. Try-On Flow Simulation</h2>
+                <p class="text-secondary mt-2">
+                    A guided 2-column workspace designed to reduce cognitive load.
+                    Interact with the stepper below to experience the specified flow.
+                </p>
+            </header>
+
+            <!-- Interactive Stepper Prototype -->
+            <div
+                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
+                <!-- Header / Stepper -->
+                <div class="bg-white border-b border-gray-100 p-4">
+                    <div class="flex items-center justify-center space-x-4">
+                        <div id="step-ind-1" class="flex items-center space-x-2 text-primary">
+                            <div
+                                class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                                1</div>
+                            <span class="text-sm font-semibold">Upload</span>
+                        </div>
+                        <div class="w-12 h-px bg-gray-200"></div>
+                        <div id="step-ind-2" class="flex items-center space-x-2 text-gray-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm">
+                                2</div>
+                            <span class="text-sm font-semibold">Select</span>
+                        </div>
+                        <div class="w-12 h-px bg-gray-200"></div>
+                        <div id="step-ind-3" class="flex items-center space-x-2 text-gray-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm">
+                                3</div>
+                            <span class="text-sm font-semibold">Generate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Workspace -->
+                <div class="flex-1 flex flex-col md:flex-row">
+                    <!-- Left: Settings Panel -->
+                    <div class="w-full md:w-1/3 bg-gray-50 p-6 border-r border-gray-100 flex flex-col justify-between"
+                        id="workspace-controls">
+                        <!-- Dynamic Content Injected Here via JS -->
+                    </div>
+
+                    <!-- Right: Preview Panel -->
+                    <div class="w-full md:w-2/3 p-6 flex items-center justify-center bg-gray-100"
+                        id="workspace-preview">
+                        <!-- Dynamic Content Injected Here via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specs Reference for this section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div class="p-4 bg-white rounded border border-gray-200">
+                    <h4 class="font-bold text-sm text-gray-700 mb-2">Error Handling Spec</h4>
+                    <p class="text-xs text-secondary">If AI fails (e.g., poor photo quality), show a modal: "We couldn't
+                        detect your pose. Try a photo with more space around your arms."</p>
+                </div>
+                <div class="p-4 bg-white rounded border border-gray-200">
+                    <h4 class="font-bold text-sm text-gray-700 mb-2">Mobile Responsiveness</h4>
+                    <p class="text-xs text-secondary">The 2-column workspace stacks vertically. Result page remains
+                        full-screen.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Result Experience -->
+        <section id="section-result" class="hidden max-w-5xl mx-auto space-y-8 animate-fade">
+            <header>
+                <h2 class="text-3xl font-bold text-gray-800">3. Result Page ("The Aha Moment")</h2>
+                <p class="text-secondary mt-2">
+                    The specification calls for an immersive "Before/After" slider comparison to validate the AI's
+                    output.
+                    Try dragging the slider below.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Immersive View Mockup -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                    <div class="slider-container group" id="comparison-slider">
+                        <!-- Background (After/AI) -->
+                        <div class="slider-image"
+                            style="background-image: linear-gradient(to right, #2563EB, #93C5FD); display: flex; align-items: center; justify-content: center;">
+                            <span class="text-white font-bold text-2xl opacity-50">✨ AI Result (After)</span>
+                        </div>
+                        <!-- Foreground (Before/Original) - Clipped -->
+                        <div class="slider-image" id="slider-foreground"
+                            style="background-image: linear-gradient(to right, #64748B, #CBD5E1); width: 50%; border-right: 2px solid white; display: flex; align-items: center; justify-content: flex-start; overflow: hidden;">
+                            <div style="width: 100vw; display: flex; justify-content: center; padding-left: 20px;">
+                                <span class="text-white font-bold text-2xl opacity-50">📸 Original (Before)</span>
+                            </div>
+                        </div>
+                        <!-- Handle -->
+                        <div class="slider-handle" id="slider-handle" style="left: 50%;">
+                            <div class="slider-button">
+                                <span>↔</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Panel Spec -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="h-4 w-12 bg-gray-200 rounded mb-4"></div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">Floral Summer Dress</h3>
+                        <p class="text-lg text-primary font-semibold mb-6">$129.00</p>
+
+                        <div class="space-y-3">
+                            <button
+                                class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                Download HD
+                            </button>
+                            <button
+                                class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition">
+                                Add to Cart
+                            </button>
+                        </div>
+
+                        <div class="mt-6 flex justify-center gap-4 text-gray-400">
+                            <span class="cursor-pointer hover:text-primary">Share on TikTok</span>
+                            <span class="cursor-pointer hover:text-primary">Instagram</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 rounded text-xs text-blue-800 mt-6">
+                        <strong>Spec Note:</strong> Primary action is 'Download HD' for user retention. 'Add to Cart'
+                        links directly to merchant.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Merchant Dashboard -->
+        <section id="section-merchant" class="hidden max-w-5xl mx-auto space-y-8 animate-fade">
+            <header>
+                <h2 class="text-3xl font-bold text-gray-800">4. Merchant Dashboard & Inventory</h2>
+                <p class="text-secondary mt-2">
+                    Tools for shop owners to visualize ROI and manage AI-ready assets.
+                </p>
+            </header>
+
+            <!-- Top Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Total Try-Ons</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">1,245</p>
+                    <p class="text-xs text-green-500 mt-1">↑ 12% trend</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Conversion Rate</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">18.4%</p>
+                    <p class="text-xs text-gray-400 mt-1">Try-on to Click</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Popular Item</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded"></div>
+                        <span class="text-sm font-semibold">Silk Top</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-bold">GPU Credits</p>
+                    <p class="text-2xl font-bold text-primary mt-1">450</p>
+                    <p class="text-xs text-gray-400 mt-1">Remaining</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Analytics Chart -->
+                <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">Try-On Activity (Last 30 Days)</h3>
+                    <div class="chart-container">
+                        <canvas id="dashboardChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Inventory Management Spec -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800">Inventory</h3>
+                        <button class="bg-primary text-white text-xs px-3 py-1.5 rounded hover:bg-blue-600 transition"
+                            onclick="alert('Modal spec: Fields for Garment Image, Title, Category. AI Warning about obstruction.')">
+                            + Add New
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-auto border rounded border-gray-100">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500">
+                                <tr>
+                                    <th class="p-3">Item</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Trys</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr class="group hover:bg-blue-50 cursor-pointer">
+                                    <td class="p-3 font-medium">Summer Dress</td>
+                                    <td class="p-3 text-green-600 text-xs">● Live</td>
+                                    <td class="p-3">450</td>
+                                </tr>
+                                <tr class="group hover:bg-blue-50 cursor-pointer">
+                                    <td class="p-3 font-medium">Denim Jacket</td>
+                                    <td class="p-3 text-green-600 text-xs">● Live</td>
+                                    <td class="p-3">320</td>
+                                </tr>
+                                <tr class="group hover:bg-blue-50 cursor-pointer">
+                                    <td class="p-3 font-medium">Maxi Skirt</td>
+                                    <td class="p-3 text-gray-400 text-xs">○ Draft</td>
+                                    <td class="p-3">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-4 italic">
+                        Spec: Needs flat lay or mannequin images for best AI mapping.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- NAVIGATION ---
+        function navTo(sectionId) {
+            // Hide all sections
+            const sections = ['overview', 'journey', 'result', 'merchant'];
+            sections.forEach(s => document.getElementById(`section-${s}`).classList.add('hidden'));
+
+            // Show target
+            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+
+            // Update Sidebar nav
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(n => n.classList.remove('active'));
+            const activeNav = document.getElementById(`nav-${sectionId}`);
+            if (activeNav) activeNav.classList.add('active');
+
+            // Render specific components if needed
+            if (sectionId === 'journey') renderStep(1);
+            if (sectionId === 'merchant') renderChart();
+        }
+
+        function toggleMobile() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // --- TRY-ON FLOW SIMULATOR ---
+        const stepContent = {
+            1: {
+                controls: `
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg mb-2">Section 1: The "Base"</h4>
+                        <p class="text-sm text-secondary mb-6">User uploads portrait. AI requires neutral pose.</p>
+                        <div class="border-2 border-dashed border-primary bg-blue-50 rounded-lg p-8 text-center cursor-pointer hover:bg-blue-100 transition">
+                            <div class="text-3xl mb-2">📸</div>
+                            <span class="text-primary font-medium text-sm">Upload Photo</span>
+                        </div>
+                    </div>
+                    <button onclick="renderStep(2)" class="w-full bg-primary text-white py-3 rounded-lg font-semibold mt-4">Next Step</button>
+                `,
+                preview: `
+                    <div class="text-center text-gray-400">
+                        <div class="w-48 h-64 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">Empty State</div>
+                        <p class="text-sm">Preview Area</p>
+                    </div>
+                `
+            },
+            2: {
+                controls: `
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg mb-2">Section 2: The "Selection"</h4>
+                        <p class="text-sm text-secondary mb-4">Select garment from grid.</p>
+                        <div class="flex gap-2 mb-4">
+                            <span class="px-2 py-1 bg-gray-200 rounded text-xs">Dresses</span>
+                            <span class="px-2 py-1 bg-white border rounded text-xs">Tops</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="h-24 bg-white border-2 border-primary rounded p-1 cursor-pointer"><div class="h-full bg-blue-100 rounded"></div></div>
+                            <div class="h-24 bg-white border rounded p-1 cursor-pointer hover:border-gray-300"><div class="h-full bg-gray-100 rounded"></div></div>
+                        </div>
+                    </div>
+                    <button onclick="renderStep(3)" class="w-full bg-primary text-white py-3 rounded-lg font-semibold mt-4 flex items-center justify-center gap-2">
+                        <span>✨</span> Magic Try-On
+                    </button>
+                `,
+                preview: `
+                    <div class="relative">
+                        <img src="https://placehold.co/300x400/e2e8f0/94a3b8?text=User+Photo" class="rounded-lg shadow-md">
+                        <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded text-xs font-bold text-gray-700 shadow-sm">
+                            Ready to Generate
+                        </div>
+                    </div>
+                `
+            },
+            3: {
+                controls: `
+                    <div class="h-full flex flex-col justify-center items-center text-center">
+                        <div class="animate-spin text-3xl mb-4">🌀</div>
+                        <h4 class="font-bold text-gray-800">Stitching your garment...</h4>
+                        <p class="text-xs text-secondary mt-2">Loading State Spec</p>
+                    </div>
+                `,
+                preview: `
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <div class="absolute inset-0 bg-primary/10 animate-pulse rounded-lg"></div>
+                        <img src="https://placehold.co/300x400/2563EB/FFFFFF?text=Generating..." class="rounded-lg shadow-lg opacity-80">
+                    </div>
+                `
+            }
+        };
+
+        function renderStep(step) {
+            // Update UI Content
+            document.getElementById('workspace-controls').innerHTML = stepContent[step].controls;
+            document.getElementById('workspace-preview').innerHTML = stepContent[step].preview;
+
+            // Update Indicators
+            [1, 2, 3].forEach(i => {
+                const el = document.getElementById(`step-ind-${i}`);
+                if (i === step) {
+                    el.className = "flex items-center space-x-2 text-primary";
+                    el.children[0].className = "w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm transition-all";
+                } else if (i < step) {
+                    el.className = "flex items-center space-x-2 text-green-600";
+                    el.children[0].className = "w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm transition-all";
+                    el.children[0].innerHTML = "✓";
+                } else {
+                    el.className = "flex items-center space-x-2 text-gray-400";
+                    el.children[0].className = "w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm transition-all";
+                    el.children[0].innerHTML = i;
+                }
+            });
+
+            // Auto-advance simulation for step 3
+            if (step === 3) {
+                setTimeout(() => {
+                    navTo('result');
+                }, 2000);
+            }
+        }
+
+        // --- RESULT SLIDER LOGIC ---
+        const sliderContainer = document.getElementById('comparison-slider');
+        const sliderForeground = document.getElementById('slider-foreground');
+        const sliderHandle = document.getElementById('slider-handle');
+        let isDragging = false;
+
+        sliderContainer.addEventListener('mousedown', () => isDragging = true);
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        sliderContainer.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = sliderContainer.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            x = Math.max(0, Math.min(x, rect.width));
+            const percent = (x / rect.width) * 100;
+
+            sliderForeground.style.width = `${percent}%`;
+            sliderHandle.style.left = `${percent}%`;
+        });
+
+        // Touch support for slider
+        sliderContainer.addEventListener('touchstart', () => isDragging = true);
+        window.addEventListener('touchend', () => isDragging = false);
+        sliderContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const rect = sliderContainer.getBoundingClientRect();
+            let x = e.touches[0].clientX - rect.left;
+            x = Math.max(0, Math.min(x, rect.width));
+            const percent = (x / rect.width) * 100;
+
+            sliderForeground.style.width = `${percent}%`;
+            sliderHandle.style.left = `${percent}%`;
+        });
+
+        // --- MERCHANT CHART ---
+        let chartInstance = null;
+        function renderChart() {
+            const ctx = document.getElementById('dashboardChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1st', '5th', '10th', '15th', '20th', '25th', '30th'],
+                    datasets: [{
+                        label: 'Try-Ons',
+                        data: [120, 190, 150, 220, 280, 250, 310],
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Init
+        // Fade in animation style
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .animate-fade { animation: fade 0.5s ease-out forwards; }
+        `;
+        document.head.appendChild(style);
+
+    </script>
+</body>
+
+</html>

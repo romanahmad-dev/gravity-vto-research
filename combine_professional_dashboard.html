@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Dashboard System</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .active-link {
+            background-color: #374151;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <a href="index.html"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.2em;">🏠</span> Back to Home
+    </a>
+
+    <div class="flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <div class="bg-gray-900 shadow-lg h-16 fixed bottom-0 md:relative md:h-screen z-10 w-full md:w-64">
+            <div
+                class="md:mt-12 md:w-64 md:fixed md:left-0 md:top-0 content-center md:content-start text-left justify-between">
+                <div class="p-4 text-white text-2xl font-bold hidden md:block">
+                    <i class="fas fa-layer-group mr-2"></i> My App
+                </div>
+                <ul class="list-reset flex flex-row md:flex-col py-0 md:py-3 px-1 md:px-2 text-center md:text-left">
+                    <li class="mr-3 flex-1">
+                        <a href="#" onclick="showTab('dashboard')" id="nav-dashboard"
+                            class="block py-1 md:py-3 pl-1 align-middle text-white no-underline hover:text-white border-b-2 border-gray-800 hover:border-blue-500 active-link">
+                            <i class="fas fa-chart-area pr-0 md:pr-3"></i><span
+                                class="pb-1 md:pb-0 text-xs md:text-base text-gray-400 md:text-gray-200 block md:inline-block">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="mr-3 flex-1">
+                        <a href="#" onclick="showTab('analytics')" id="nav-analytics"
+                            class="block py-1 md:py-3 pl-1 align-middle text-white no-underline hover:text-white border-b-2 border-gray-800 hover:border-pink-500">
+                            <i class="fas fa-tasks pr-0 md:pr-3"></i><span
+                                class="pb-1 md:pb-0 text-xs md:text-base text-gray-400 md:text-gray-200 block md:inline-block">Analytics</span>
+                        </a>
+                    </li>
+                    <li class="mr-3 flex-1">
+                        <a href="#" onclick="showTab('tables')" id="nav-tables"
+                            class="block py-1 md:py-3 pl-1 align-middle text-white no-underline hover:text-white border-b-2 border-gray-800 hover:border-purple-500">
+                            <i class="fa fa-envelope pr-0 md:pr-3"></i><span
+                                class="pb-1 md:pb-0 text-xs md:text-base text-gray-400 md:text-gray-200 block md:inline-block">Reports</span>
+                        </a>
+                    </li>
+                    <li class="mr-3 flex-1">
+                        <a href="#" onclick="showTab('settings')" id="nav-settings"
+                            class="block py-1 md:py-3 pl-1 align-middle text-white no-underline hover:text-white border-b-2 border-gray-800 hover:border-green-500">
+                            <i class="fas fa-cog pr-0 md:pr-3"></i><span
+                                class="pb-1 md:pb-0 text-xs md:text-base text-gray-400 md:text-gray-200 block md:inline-block">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1 bg-gray-100 mt-12 md:mt-2 pb-24 md:pb-5">
+
+            <div class="bg-gray-800 pt-3">
+                <div class="rounded-tl-3xl bg-gradient-to-r from-blue-900 to-gray-800 p-4 shadow text-2xl text-white">
+                    <h1 class="font-bold pl-2" id="page-title">Main Dashboard</h1>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active p-6">
+                <div class="flex flex-wrap">
+                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
+                        <div
+                            class="bg-gradient-to-b from-green-200 to-green-100 border-b-4 border-green-600 rounded-lg shadow-xl p-5">
+                            <div class="flex flex-row items-center">
+                                <div class="flex-shrink pr-4">
+                                    <div class="rounded-full p-5 bg-green-600"><i
+                                            class="fa fa-wallet fa-2x fa-inverse"></i></div>
+                                </div>
+                                <div class="flex-1 text-right md:text-center">
+                                    <h5 class="font-bold uppercase text-gray-600">Total Revenue</h5>
+                                    <h3 class="font-bold text-3xl">$3249 <span class="text-green-500"><i
+                                                class="fas fa-caret-up"></i></span></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
+                        <div
+                            class="bg-gradient-to-b from-pink-200 to-pink-100 border-b-4 border-pink-500 rounded-lg shadow-xl p-5">
+                            <div class="flex flex-row items-center">
+                                <div class="flex-shrink pr-4">
+                                    <div class="rounded-full p-5 bg-pink-600"><i
+                                            class="fas fa-users fa-2x fa-inverse"></i></div>
+                                </div>
+                                <div class="flex-1 text-right md:text-center">
+                                    <h5 class="font-bold uppercase text-gray-600">Total Users</h5>
+                                    <h3 class="font-bold text-3xl">249 <span class="text-pink-500"><i
+                                                class="fas fa-exchange-alt"></i></span></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 xl:w-1/3 p-6">
+                        <div
+                            class="bg-gradient-to-b from-yellow-200 to-yellow-100 border-b-4 border-yellow-600 rounded-lg shadow-xl p-5">
+                            <div class="flex flex-row items-center">
+                                <div class="flex-shrink pr-4">
+                                    <div class="rounded-full p-5 bg-yellow-600"><i
+                                            class="fas fa-user-plus fa-2x fa-inverse"></i></div>
+                                </div>
+                                <div class="flex-1 text-right md:text-center">
+                                    <h5 class="font-bold uppercase text-gray-600">New Users</h5>
+                                    <h3 class="font-bold text-3xl">2 <span class="text-yellow-600"><i
+                                                class="fas fa-caret-up"></i></span></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-row flex-wrap flex-grow mt-2">
+                    <div class="w-full md:w-full p-6">
+                        <div class="bg-white border-transparent rounded-lg shadow-xl">
+                            <div
+                                class="bg-gradient-to-b from-gray-300 to-gray-100 uppercase text-gray-800 border-b-2 border-gray-300 rounded-tl-lg rounded-tr-lg p-2">
+                                <h5 class="font-bold uppercase text-gray-600">Graph Placeholder</h5>
+                            </div>
+                            <div class="p-5">
+                                <canvas id="chartjs-7" class="chartjs" width="undefined" height="undefined"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content p-6">
+                <div class="bg-white p-8 rounded shadow">
+                    <h2 class="text-2xl font-bold mb-4">Detailed Analytics</h2>
+                    <p class="text-gray-600 mb-4">Yahan aapka analytics ka data (jo pehle generate hua tha) nazar ayega.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border p-4 rounded bg-blue-50">
+                            <h4 class="font-bold">Conversion Rate</h4>
+                            <p class="text-3xl">4.5%</p>
+                        </div>
+                        <div class="border p-4 rounded bg-purple-50">
+                            <h4 class="font-bold">Bounce Rate</h4>
+                            <p class="text-3xl">22%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables/Reports Tab -->
+            <div id="tables" class="tab-content p-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-4">Recent Transactions</h2>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3 font-bold uppercase text-sm text-gray-600 border border-gray-300">Name
+                                </th>
+                                <th class="p-3 font-bold uppercase text-sm text-gray-600 border border-gray-300">Status
+                                </th>
+                                <th class="p-3 font-bold uppercase text-sm text-gray-600 border border-gray-300">Amount
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-100">
+                                <td class="p-3 border border-gray-300">Ahmad Khan</td>
+                                <td class="p-3 border border-gray-300"><span
+                                        class="bg-green-200 text-green-700 py-1 px-3 rounded-full text-xs">Completed</span>
+                                </td>
+                                <td class="p-3 border border-gray-300">$120.00</td>
+                            </tr>
+                            <tr class="hover:bg-gray-100">
+                                <td class="p-3 border border-gray-300">Sara Ali</td>
+                                <td class="p-3 border border-gray-300"><span
+                                        class="bg-yellow-200 text-yellow-700 py-1 px-3 rounded-full text-xs">Pending</span>
+                                </td>
+                                <td class="p-3 border border-gray-300">$45.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content p-6">
+                <div class="bg-white p-8 rounded shadow max-w-lg mx-auto">
+                    <h2 class="text-2xl font-bold mb-6">User Settings</h2>
+                    <form>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Profile Name</label>
+                            <input
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                type="text" value="Admin User">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Email Notifications</label>
+                            <input type="checkbox" checked> Receive daily reports
+                        </div>
+                        <button
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="button">
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Navigation Logic
+        function showTab(tabId) {
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+
+            // Update Page Title
+            const titles = {
+                'dashboard': 'Main Dashboard Overview',
+                'analytics': 'Detailed Performance Analytics',
+                'tables': 'Reports & Transactions',
+                'settings': 'Account Settings'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+
+            // Update Nav Styles
+            const navLinks = document.querySelectorAll('nav a, div ul li a');
+            navLinks.forEach(link => link.classList.remove('active-link'));
+            document.getElementById('nav-' + tabId).classList.add('active-link');
+        }
+
+        // Initialize Chart
+        window.onload = function () {
+            new Chart(document.getElementById("chartjs-7"), {
+                "type": "bar",
+                "data": {
+                    "labels": ["January", "February", "March", "April"],
+                    "datasets": [{
+                        "label": "Monthly Sales",
+                        "data": [65, 59, 80, 81],
+                        "fill": false,
+                        "backgroundColor": ["rgba(255, 99, 132, 0.2)", "rgba(255, 159, 64, 0.2)", "rgba(255, 205, 86, 0.2)", "rgba(75, 192, 192, 0.2)"],
+                        "borderColor": ["rgb(255, 99, 132)", "rgb(255, 159, 64)", "rgb(255, 205, 86)", "rgb(75, 192, 192)"],
+                        "borderWidth": 1
+                    }]
+                },
+                "options": {
+                    "scales": {
+                        "yAxes": [{
+                            "ticks": {
+                                "beginAtZero": true
+                            }
+                        }]
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>

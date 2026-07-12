@@ -1,0 +1,526 @@
+<!-- Chosen Palette: Warm Neutrals (Background: #fdfbf7) with Technical Indigo (#4f46e5) and Data Teal (#14b8a6) accents. -->
+<!-- Application Structure Plan: 
+    The application is designed as an "Interactive Blueprint Explorer" for the AI Pipeline. 
+    1. **Header**: Contextualizes the report as a technical architecture document.
+    2. **Pipeline Navigator (Horizontal Stepper)**: The core navigation. Allows users to traverse the 7 distinct stages of the VTO process linearly, mirroring the data flow.
+    3. **Stage Detail Console**: A dynamic split-screen view. 
+       - Left: "Process Logic" (Goal & Technical Description).
+       - Right: "Toolbox" (Specific Models & Libraries mentioned).
+    4. **Model Landscape Visualization (Chart.js)**: A horizontal bar chart quantifying the number of recommended tools/models per stage, giving a high-level view of the ecosystem complexity.
+    5. **Summary Data Table**: A filterable reference table derived from the report's summary, useful for quick lookups.
+    This structure transforms the linear text into a functional dashboard where users can "debug" or "inspect" each part of the pipeline.
+-->
+<!-- Visualization & Content Choices:
+    1. **Pipeline Navigator**: Interactive HTML/CSS Stepper. Goal: Organize. Visualizes the sequential dependency of the AI steps.
+    2. **Stage Detail Console**: Dynamic DOM manipulation. Goal: Inform. Breaks down dense technical text into 'Goal', 'Process', and 'Stack'.
+    3. **Ecosystem Chart**: Chart.js Horizontal Bar. Goal: Compare. Visualizes the density of tooling options (e.g., Preprocessing vs. Synthesis) mentioned in the report.
+    4. **Model Table**: Styled HTML Table. Goal: Organize. Provides a structured view of the "Summary Table" from the source.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTO AI Pipeline Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #fdfbf7;
+            color: #1f2937;
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Chart Container Styling per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            /* Explicit max-width */
+            margin-left: auto;
+            margin-right: auto;
+            /* Centered */
+            height: 350px;
+            /* Controlled height */
+            max-height: 400px;
+        }
+
+        .step-active {
+            background-color: #4f46e5;
+            /* Indigo 600 */
+            color: white;
+            border-color: #4f46e5;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .step-inactive {
+            background-color: white;
+            color: #9ca3af;
+            /* Gray 400 */
+            border-color: #e5e7eb;
+            /* Gray 200 */
+        }
+
+        .step-inactive:hover {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        /* Custom Scrollbar for Stepper */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Transition for detail pane */
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <a href="index.html"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.2em;">🏠</span> Back to Home
+    </a>
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-gray-200 py-6 px-4 md:px-8 shadow-sm relative z-10">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center gap-3 mb-2">
+                <span
+                    class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded mono tracking-wider">TECHNICAL
+                    REPORT</span>
+                <span class="text-gray-400 text-xs mono">vto_pipeline_technical.md</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                AI Pipeline Architecture: Virtual Try-On MVP
+            </h1>
+            <p class="mt-3 text-gray-600 max-w-3xl leading-relaxed text-sm md:text-base">
+                Explore the end-to-end technical workflow for high-fidelity virtual try-on.
+                This interactive blueprint breaks down the process from raw image ingestion to the final
+                IDM-VTON synthesis, detailing the models and transformations at each stage.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-8 space-y-12 pb-20">
+
+        <!-- SECTION 1: Pipeline Navigator & Detail Console -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span
+                        class="bg-indigo-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs mono">01</span>
+                    Pipeline Execution Flow
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 pl-9">Interactive timeline. Click a stage number to inspect
+                    technical details.</p>
+            </div>
+
+            <!-- Pipeline Stepper (Horizontal Scroll on Mobile) -->
+            <div class="flex overflow-x-auto pb-4 gap-3 md:gap-4 mb-6 scrollbar-hide px-1" id="stepper-container">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Detail Console -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden flex flex-col md:flex-row min-h-[450px]"
+                id="detail-console">
+                <!-- Left: Process Logic -->
+                <div class="md:w-2/3 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-100 relative bg-white">
+                    <div id="step-content" class="fade-in space-y-6">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Stack/Toolbox -->
+                <div class="md:w-1/3 bg-slate-50 p-6 md:p-8 border-l border-gray-100 flex flex-col">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6 mono">Recommended Stack
+                    </h3>
+                    <div id="step-tools" class="fade-in space-y-3 flex-1">
+                        <!-- Tools Injected via JS -->
+                    </div>
+                    <div class="mt-auto pt-6 border-t border-gray-200">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-2">Technical Context
+                        </p>
+                        <p class="text-xs text-gray-500 italic" id="step-context-note">
+                            <!-- Context Injected via JS -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Ecosystem Landscape (Chart.js) -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span
+                        class="bg-teal-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs mono">02</span>
+                    Model & Tool Ecosystem
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 pl-9">Distribution of recommended open-source models and libraries
+                    across pipeline stages.</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div class="chart-container">
+                    <canvas id="toolsChart"></canvas>
+                </div>
+                <div class="mt-4 text-xs text-center text-gray-400 mono">
+                    Data Source: vto_pipeline_technical.md | Visualizing tool density per stage
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Reference Table -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span
+                        class="bg-gray-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs mono">03</span>
+                    Technical Summary
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 pl-9">Quick reference guide for FYP documentation.</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Pipeline Stage
+                                </th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Core Process
+                                </th>
+                                <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Recommended
+                                    Model(s)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm" id="summary-table-body">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- SOURCE DATA (Parsed from Source Report) ---
+        const pipelineData = [
+            {
+                id: 1,
+                stage: "Human Image Preprocessing",
+                goal: "Normalize the user's uploaded photo for the neural network.",
+                process: [
+                    "<strong>Resizing/Padding:</strong> Standardizing the image to a fixed resolution (e.g., 512x384 or 1024x768) while maintaining aspect ratio.",
+                    "<strong>Normalization:</strong> Adjusting brightness and contrast to match the training dataset (e.g., VITON-HD)."
+                ],
+                tools: ["OpenCV", "PIL (Python Imaging Library)"],
+                type: "Preprocessing",
+                context: "Foundational step to ensure input consistency."
+            },
+            {
+                id: 2,
+                stage: "Cloth Image Preprocessing",
+                goal: "Prepare the \"target\" garment for mapping.",
+                process: [
+                    "<strong>Background Removal:</strong> Isolating the clothing item from its original flat-lay or mannequin background.",
+                    "<strong>Geometric Transformation:</strong> Aligning the garment horizontally so the AI can identify the neck, sleeves, and hem."
+                ],
+                tools: ["RMBG-1.4", "U2-Net"],
+                type: "Preprocessing",
+                context: "Ensures clean isolation of the garment artifact."
+            },
+            {
+                id: 3,
+                stage: "Human Segmentation (Parsing)",
+                goal: "Identify which pixels belong to the skin, hair, original clothes, and background.",
+                process: [
+                    "Creating a <strong>\"Semantic Map.\"</strong>",
+                    "The system identifies where arms end and original shirt begins.",
+                    "Enables \"erasing\" the old shirt without deleting the user's arms."
+                ],
+                tools: ["Graphonomy", "SCHP (Self-Correction for Human Parsing)"],
+                type: "Segmentation",
+                context: "Critical for defining the 'in-painting' mask area."
+            },
+            {
+                id: 4,
+                stage: "Cloth Segmentation",
+                goal: "Distinguish the garment from its own details (buttons, zippers, textures).",
+                process: [
+                    "Creating a <strong>binary mask</strong> of the garment.",
+                    "Helps the AI understand its shape and boundaries during the warping process."
+                ],
+                tools: ["SAM (Segment Anything Model)"],
+                type: "Segmentation",
+                context: "Leverages Meta AI's SAM for high-precision masking."
+            },
+            {
+                id: 5,
+                stage: "Pose Estimation & Alignment",
+                goal: "Determine the user’s skeleton structure to \"wrap\" the cloth correctly.",
+                process: [
+                    "Detecting <strong>18-25 keypoints</strong> (shoulders, elbows, wrists).",
+                    "Ensures that if a user has their hand on their hip, the sleeve of the new dress follows that arm's curve."
+                ],
+                tools: ["OpenPose", "MediaPipe"],
+                type: "Alignment",
+                context: "MediaPipe is noted as lightweight and fast."
+            },
+            {
+                id: 6,
+                stage: "Image Warping (TPS or Flow-based)",
+                goal: "Deform the flat garment image to fit the 3D shape of the human body.",
+                process: [
+                    "Using <strong>Thin Plate Spline (TPS)</strong> or Appearance Flow.",
+                    "Stretches the cloth according to the detected pose keypoints and human parsing map.",
+                    "This is where the \"flat\" dress starts to look like it's being worn."
+                ],
+                tools: ["DensePose"],
+                type: "Warping",
+                context: "Maps 2D pixels to a 3D surface representation."
+            },
+            {
+                id: 7,
+                stage: "Image Blending & Generation",
+                goal: "Merge the warped cloth with the human image while preserving shadows and skin textures.",
+                process: [
+                    "The <strong>\"Try-On Network\"</strong> takes the warped cloth, the parsed human image (minus the old clothes), and the pose map.",
+                    "Uses a <strong>GAN</strong> or <strong>Diffusion</strong> model to synthesize the final pixels.",
+                    "<strong>Post-processing:</strong> Refining edges around the neck and wrists to avoid \"ghosting\" effects."
+                ],
+                tools: ["IDM-VTON", "LWB (Learnable Weighting Bridge)"],
+                type: "Synthesis",
+                context: "The final and most computationally intensive step."
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentStepId = 1;
+
+        // --- DOM ELEMENTS ---
+        const stepperContainer = document.getElementById('stepper-container');
+        const stepContentEl = document.getElementById('step-content');
+        const stepToolsEl = document.getElementById('step-tools');
+        const summaryTableBody = document.getElementById('summary-table-body');
+        const contextNoteEl = document.getElementById('step-context-note');
+
+        // --- INITIALIZATION ---
+        function initApp() {
+            renderStepper();
+            renderStepDetails(1);
+            renderChart();
+            renderTable();
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderStepper() {
+            stepperContainer.innerHTML = pipelineData.map(step => `
+                <button 
+                    onclick="handleStepClick(${step.id})"
+                    class="flex-shrink-0 flex items-center gap-3 px-5 py-4 rounded-xl border transition-all duration-200 ${step.id === currentStepId ? 'step-active ring-2 ring-indigo-200 ring-offset-1' : 'step-inactive'}"
+                >
+                    <span class="font-mono text-sm font-bold opacity-80">0${step.id}</span>
+                    <div class="flex flex-col items-start">
+                        <span class="text-xs font-bold uppercase tracking-wider opacity-70">${step.type}</span>
+                        <span class="text-sm font-bold whitespace-nowrap">${step.stage.split('(')[0].split(':')[0]}</span>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function renderStepDetails(id) {
+            const step = pipelineData.find(s => s.id === id);
+            if (!step) return;
+
+            // Animation reset
+            stepContentEl.classList.remove('fade-in');
+            stepToolsEl.classList.remove('fade-in');
+            void stepContentEl.offsetWidth; // trigger reflow
+            stepContentEl.classList.add('fade-in');
+            stepToolsEl.classList.add('fade-in');
+
+            // Render Process Content
+            stepContentEl.innerHTML = `
+                <div class="flex items-center justify-between mb-6">
+                    <span class="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-100 uppercase tracking-wider shadow-sm">${step.type} Phase</span>
+                    <span class="font-mono text-slate-100 text-6xl font-bold absolute right-4 top-4 select-none">0${step.id}</span>
+                </div>
+                <div class="relative z-10">
+                    <h3 class="text-3xl font-bold text-gray-800 mb-3 tracking-tight">${step.stage}</h3>
+                    
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-8">
+                        <h4 class="text-xs font-bold text-amber-800 uppercase mb-1">Objective</h4>
+                        <p class="text-amber-900 text-sm leading-relaxed font-medium">${step.goal}</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="w-1 h-4 bg-indigo-500 rounded-full"></span>
+                            Technical Process
+                        </h4>
+                        <ul class="space-y-4">
+                            ${step.process.map(p => `
+                                <li class="flex items-start gap-4 text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <span class="text-indigo-500 mt-1 font-bold text-lg">›</span>
+                                    <span>${p}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // Render Tools
+            stepToolsEl.innerHTML = step.tools.map(tool => `
+                <div class="flex items-center gap-3 bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+                    <div class="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-gray-400 font-bold uppercase block">Tool / Model</span>
+                        <span class="text-sm font-mono font-bold text-gray-700">${tool}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render Context
+            contextNoteEl.innerText = step.context;
+        }
+
+        function handleStepClick(id) {
+            currentStepId = id;
+            renderStepper();
+            renderStepDetails(id);
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('toolsChart').getContext('2d');
+
+            // Prepare data: Count tools per stage
+            const labels = pipelineData.map(d => `0${d.id}: ${d.stage.split(' ')[0]}`);
+            const dataCounts = pipelineData.map(d => d.tools.length);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Recommended Models',
+                        data: dataCounts,
+                        backgroundColor: [
+                            '#e0e7ff', // indigo-100
+                            '#e0e7ff',
+                            '#c7d2fe', // indigo-200
+                            '#a5b4fc', // indigo-300
+                            '#818cf8', // indigo-400
+                            '#6366f1', // indigo-500
+                            '#4f46e5'  // indigo-600
+                        ],
+                        borderRadius: 6,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { display: false },
+                            ticks: { stepSize: 1, font: { family: "'JetBrains Mono'" } },
+                            title: { display: true, text: 'Number of Recommended Tools' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Inter'", weight: '600' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            padding: 12,
+                            titleFont: { family: "'Inter'", size: 13 },
+                            bodyFont: { family: "'JetBrains Mono'", size: 12 },
+                            callbacks: {
+                                label: (ctx) => {
+                                    const step = pipelineData[ctx.dataIndex];
+                                    return `Tools: ${step.tools.join(', ')}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTable() {
+            // Mapping summarized data based on report table
+            const summaryRows = [
+                { stage: "Parsing", process: "Human Semantic Segmentation", model: "SCHP / Graphonomy" },
+                { stage: "Pose", process: "2D Keypoint Detection", model: "MediaPipe / OpenPose" },
+                { stage: "Warping", process: "Geometric Cloth Alignment", model: "TPS / DensePose" },
+                { stage: "Synthesis", process: "Image Generation", model: "IDM-VTON / TryOnDiffusion" }
+            ];
+
+            summaryTableBody.innerHTML = summaryRows.map(row => `
+                <tr class="hover:bg-indigo-50/50 transition-colors border-b border-gray-100">
+                    <td class="p-4 font-mono font-bold text-indigo-600 text-sm">${row.stage}</td>
+                    <td class="p-4 text-gray-700 text-sm font-medium">${row.process}</td>
+                    <td class="p-4">
+                        <span class="bg-teal-50 text-teal-700 px-3 py-1.5 rounded-md text-xs font-mono font-bold border border-teal-100 shadow-sm">${row.model}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- START ---
+        initApp();
+
+    </script>
+</body>
+
+</html>

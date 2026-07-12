@@ -1,0 +1,719 @@
+<!-- Chosen Palette: Warm Neutrals with Soft Indigo Accents (Background: #fdfbf7, Text: #1f2937, Primary: #6366f1) -->
+<!-- Application Structure Plan: A "Founder's Dashboard" interface designed to present the Startup Blueprint. The structure is divided into four main interactive modules: 'Product Vision' (Features & Flows), 'Technical Architecture' (Stack & AI Pipeline), 'Business Strategy' (Monetization Calculator), and 'FYP Roadmap'. This structure was chosen to logically separate the concerns of a startup founder/student researcher, allowing them to deep-dive into the specific area of interest (Business vs. Tech) while maintaining a cohesive overview of the entire project plan. -->
+<!-- Visualization & Content Choices:
+1. Product Vision: Interactive Cards for features (Inform/Organize). Goal: clearly distinguish User vs. Merchant features.
+2. User Flows: Tabbed vertical stepper (Change/Organize). Goal: Walk through the linear processes for each role.
+3. Tech Stack: Interactive Layered Diagram (HTML/CSS). Hovering reveals specific choices (React, FastAPI, IDM-VTON).
+4. Business Model: Interactive Bar Chart (Chart.js) with Range Sliders (Compare/Change). Goal: Allow user to simulate revenue based on shop signups to understand the 'SaaS' vs 'Commission' model potential.
+5. AI Pipeline: Horizontal Stepper (Organize). Goal: Break down the complex AI process (Preprocessing -> Segmentation -> Warping) into digestible steps.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTO Startup Blueprint Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        body {
+            background-color: #fdfbf7;
+            color: #1f2937;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .active-nav {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border-right: 3px solid #4338ca;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .step-circle {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+    <a href="index.html"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease-in-out;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.2em;">🏠</span> Back to Home
+    </a>
+
+    <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col z-10 shadow-sm">
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-indigo-600">VTO Blueprint</h1>
+            <p class="text-xs text-gray-500 mt-1">Startup & FYP Dashboard</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="switchSection('vision')" id="nav-vision"
+                        class="w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors active-nav">
+                        🎯 Product Vision & MVP
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchSection('users')" id="nav-users"
+                        class="w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        👥 User Flows
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchSection('tech')" id="nav-tech"
+                        class="w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        ⚙️ Tech Architecture
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchSection('business')" id="nav-business"
+                        class="w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        💰 Monetization Model
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchSection('fyp')" id="nav-fyp"
+                        class="w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        🎓 FYP Guidelines
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="bg-indigo-50 p-3 rounded-lg">
+                <p class="text-xs text-indigo-800 font-semibold">Project Phase</p>
+                <div class="w-full bg-indigo-200 rounded-full h-2 mt-2">
+                    <div class="bg-indigo-600 h-2 rounded-full" style="width: 35%"></div>
+                </div>
+                <p class="text-[10px] text-indigo-600 mt-1 text-right">Blueprint Design</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto relative p-4 md:p-8">
+
+        <section id="section-vision" class="max-w-5xl mx-auto space-y-8 animate-fade-in">
+            <header class="space-y-2">
+                <h2 class="text-3xl font-bold text-gray-800">Product Vision & MVP Scope</h2>
+                <p class="text-gray-600 max-w-3xl leading-relaxed">
+                    This section defines the core deliverables for the Minimum Viable Product (MVP).
+                    To ensure rapid market entry and academic feasibility, the scope is strictly focused on
+                    <strong>Image-to-Image (I2I) Virtual Try-On</strong>. This avoids the complexity of 3D modeling
+                    while leveraging
+                    high-fidelity Generative AI (GANs/Diffusion) to solve the "fit" problem for online shoppers.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="text-2xl">🛍️</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">User Experience</h3>
+                            <p class="text-xs text-gray-400">The Shopper's Interface</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3" id="user-features-list">
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="text-2xl">🏪</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Merchant Dashboard</h3>
+                            <p class="text-xs text-gray-400">The Shop Owner's Tools</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3" id="merchant-features-list">
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-indigo-900 text-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
+                <div>
+                    <h3 class="font-bold text-lg mb-2">⚡ Critical AI Requirement</h3>
+                    <p class="text-indigo-100 text-sm max-w-2xl">
+                        The AI engine must prioritize two factors above all else:
+                        <strong>1. Pose Preservation:</strong> The user's stance must remain identical to the uploaded
+                        photo.
+                        <strong>2. Texture Mapping:</strong> Fabric details (lace, denim patterns) must be rendered
+                        realistically, not just colored over.
+                    </p>
+                </div>
+                <button onclick="switchSection('tech')"
+                    class="whitespace-nowrap bg-white text-indigo-900 px-6 py-3 rounded-lg font-bold text-sm hover:bg-indigo-50 transition transform hover:scale-105 shadow-md">
+                    View Tech Stack
+                </button>
+            </div>
+        </section>
+
+        <section id="section-users" class="hidden max-w-5xl mx-auto space-y-8">
+            <header class="space-y-2">
+                <h2 class="text-3xl font-bold text-gray-800">User Roles & Journeys</h2>
+                <p class="text-gray-600 max-w-3xl leading-relaxed">
+                    A successful platform must serve three distinct stakeholders. Use the interactive tabs below to
+                    visualize the step-by-step workflow for the Customer (End User), the Merchant (Client), and the
+                    Admin (You).
+                </p>
+            </header>
+
+            <div
+                class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col md:flex-row">
+                <div class="bg-gray-50 md:w-64 border-r border-gray-200 p-2 space-y-2">
+                    <button onclick="setUserRole('customer')" id="btn-role-customer"
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-bold bg-white shadow-sm text-indigo-600 border border-indigo-200">
+                        👤 Customer
+                    </button>
+                    <button onclick="setUserRole('merchant')" id="btn-role-merchant"
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-white hover:shadow-sm transition">
+                        🏢 Merchant
+                    </button>
+                    <button onclick="setUserRole('admin')" id="btn-role-admin"
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-white hover:shadow-sm transition">
+                        🔑 Super Admin
+                    </button>
+                </div>
+
+                <div class="flex-1 p-8 bg-white relative">
+                    <div id="flow-content-area" class="space-y-6">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-tech" class="hidden max-w-5xl mx-auto space-y-8">
+            <header class="space-y-2">
+                <h2 class="text-3xl font-bold text-gray-800">Technical Architecture</h2>
+                <p class="text-gray-600 max-w-3xl leading-relaxed">
+                    The platform relies on a modern, decoupled architecture. <strong>React</strong> handles the
+                    dashboard interactivity,
+                    while <strong>FastAPI</strong> manages the heavy lifting of queuing AI tasks. The core AI engine
+                    runs on specialized GPU infrastructure.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div
+                    class="bg-white p-6 rounded-xl border-t-4 border-blue-500 shadow-sm hover:shadow-md transition card-hover group h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg group-hover:text-blue-600">Frontend (UI)</h3>
+                        <span class="text-2xl">🖥️</span>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-blue-50 text-blue-900 px-3 py-2 rounded border border-blue-100">
+                            <strong>Framework:</strong> React.js or Next.js
+                            <div class="text-xs text-blue-700 mt-1 opacity-80">SEO friendly, fast dashboards</div>
+                        </div>
+                        <div class="bg-blue-50 text-blue-900 px-3 py-2 rounded border border-blue-100">
+                            <strong>Styling:</strong> Tailwind CSS
+                            <div class="text-xs text-blue-700 mt-1 opacity-80">Rapid UI development</div>
+                        </div>
+                        <div class="bg-blue-50 text-blue-900 px-3 py-2 rounded border border-blue-100">
+                            <strong>State:</strong> Zustand / Redux
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-xl border-t-4 border-emerald-500 shadow-sm hover:shadow-md transition card-hover group h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg group-hover:text-emerald-600">Backend (Logic)</h3>
+                        <span class="text-2xl">⚙️</span>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-emerald-50 text-emerald-900 px-3 py-2 rounded border border-emerald-100">
+                            <strong>Server:</strong> Python (FastAPI)
+                            <div class="text-xs text-emerald-700 mt-1 opacity-80">Unified language with AI logic</div>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-900 px-3 py-2 rounded border border-emerald-100">
+                            <strong>Database:</strong> PostgreSQL
+                            <div class="text-xs text-emerald-700 mt-1 opacity-80">Via Supabase or Prisma</div>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-900 px-3 py-2 rounded border border-emerald-100">
+                            <strong>Storage:</strong> AWS S3 / GCS
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-xl border-t-4 border-purple-500 shadow-sm hover:shadow-md transition card-hover group h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg group-hover:text-purple-600">AI Core (Engine)</h3>
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-purple-50 text-purple-900 px-3 py-2 rounded border border-purple-100">
+                            <strong>VTO Model:</strong> IDM-VTON
+                            <div class="text-xs text-purple-700 mt-1 opacity-80">Or TryOnDiffusion (SOTA)</div>
+                        </div>
+                        <div class="bg-purple-50 text-purple-900 px-3 py-2 rounded border border-purple-100">
+                            <strong>Segmentation:</strong> SAM
+                            <div class="text-xs text-purple-700 mt-1 opacity-80">Segment Anything Model</div>
+                        </div>
+                        <div class="bg-purple-50 text-purple-900 px-3 py-2 rounded border border-purple-100">
+                            <strong>Infrastructure:</strong> GPU Cloud
+                            <div class="text-xs text-purple-700 mt-1 opacity-80">RunPod / Lambda Labs (A100)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Development Workflow Integration</h3>
+                <div class="flex flex-col md:flex-row items-center justify-between text-sm gap-4">
+                    <div class="flex-1 text-center bg-white p-3 rounded shadow-sm w-full">Frontend Request<br><span
+                            class="text-gray-400 text-xs">Upload Photo</span></div>
+                    <div class="text-gray-400">➜</div>
+                    <div class="flex-1 text-center bg-white p-3 rounded shadow-sm w-full">FastAPI Backend<br><span
+                            class="text-gray-400 text-xs">Auth & Queue</span></div>
+                    <div class="text-gray-400">➜</div>
+                    <div class="flex-1 text-center bg-white p-3 rounded shadow-sm w-full">GPU Worker<br><span
+                            class="text-gray-400 text-xs">IDM-VTON Inference</span></div>
+                    <div class="text-gray-400">➜</div>
+                    <div class="flex-1 text-center bg-white p-3 rounded shadow-sm w-full">S3 Storage<br><span
+                            class="text-gray-400 text-xs">Save Result URL</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-business" class="hidden max-w-5xl mx-auto space-y-8">
+            <header class="space-y-2">
+                <h2 class="text-3xl font-bold text-gray-800">Monetization Simulator</h2>
+                <p class="text-gray-600 max-w-3xl leading-relaxed">
+                    Startups live and die by their revenue models. This simulator helps you analyze the potential
+                    profitability of the VTO platform using
+                    a hybrid model: **SaaS Subscriptions** (Recurring) and **Pay-per-Generation** (Usage-based). Adjust
+                    the sliders to see how scaling shops affects revenue.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+                    <h3 class="font-bold text-lg border-b pb-2 flex items-center justify-between">
+                        Parameters
+                        <span class="text-xs font-normal bg-indigo-100 text-indigo-700 px-2 py-1 rounded">Monthly</span>
+                    </h3>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Active Shops (Subscribers)</label>
+                        <input type="range" min="1" max="500" value="50"
+                            class="w-full accent-indigo-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            id="slider-shops" oninput="updateRevenue()">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1</span>
+                            <span id="val-shops" class="font-bold text-indigo-600">50 Shops</span>
+                            <span>500</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Avg. Generations / Shop</label>
+                        <input type="range" min="0" max="2000" value="300"
+                            class="w-full accent-indigo-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            id="slider-gens" oninput="updateRevenue()">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0</span>
+                            <span id="val-gens" class="font-bold text-indigo-600">300 Gens</span>
+                            <span>2k</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">SaaS Fee ($)</label>
+                            <input type="number" value="29"
+                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                id="input-saas" oninput="updateRevenue()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Cost/Gen ($)</label>
+                            <input type="number" value="0.05" step="0.01"
+                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                id="input-ppg" oninput="updateRevenue()">
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-4 rounded-lg mt-4 border border-indigo-100">
+                        <p class="text-sm font-bold text-indigo-900 uppercase tracking-wide">Est. Revenue</p>
+                        <p class="text-3xl font-bold text-indigo-600" id="total-revenue">$0</p>
+                        <p class="text-xs text-indigo-400 mt-1">Per Month</p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-gray-800">Revenue Breakdown</h3>
+                        <div class="flex gap-2">
+                            <span class="text-xs flex items-center gap-1"><span
+                                    class="w-2 h-2 rounded-full bg-indigo-500"></span> SaaS</span>
+                            <span class="text-xs flex items-center gap-1"><span
+                                    class="w-2 h-2 rounded-full bg-teal-400"></span> Usage</span>
+                        </div>
+                    </div>
+                    <div class="chart-container flex-1">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 border border-gray-100">
+                        <strong>Additional Revenue Streams:</strong><br>
+                        • <strong>Affiliate Model:</strong> 2-5% commission on successful sales.<br>
+                        • <strong>Premium User Tier:</strong> Monthly fee for users wanting unlimited high-res 4K
+                        downloads.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-fyp" class="hidden max-w-5xl mx-auto space-y-8 pb-20">
+            <header class="space-y-2">
+                <h2 class="text-3xl font-bold text-gray-800">FYP Defense Strategy</h2>
+                <p class="text-gray-600 max-w-3xl leading-relaxed">
+                    For your Final Year Project report and presentation, focus on these three pillars.
+                    Academic projects are judged on methodology and evaluation, not just the final UI.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-amber-50 border border-amber-100 p-6 rounded-xl hover:shadow-md transition">
+                    <div
+                        class="text-4xl mb-4 bg-white w-12 h-12 flex items-center justify-center rounded-full shadow-sm">
+                        🎯</div>
+                    <h3 class="font-bold text-lg text-amber-800 mb-2">Focus on Accuracy</h3>
+                    <p class="text-sm text-amber-900 opacity-80 leading-relaxed">
+                        Don't just say "it works." Evaluate how the AI handles complex edge cases like <strong>lace
+                            textures, plaid patterns, and weird lighting</strong>. Qualitative analysis of these
+                        failure/success cases is crucial for the report.
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-100 p-6 rounded-xl hover:shadow-md transition">
+                    <div
+                        class="text-4xl mb-4 bg-white w-12 h-12 flex items-center justify-center rounded-full shadow-sm">
+                        📊</div>
+                    <h3 class="font-bold text-lg text-blue-800 mb-2">The Dataset</h3>
+                    <p class="text-sm text-blue-900 opacity-80 leading-relaxed">
+                        Explicitly mention the use of the <strong>VITON-HD</strong> dataset for training or fine-tuning.
+                        This is the industry standard benchmark and adds immediate academic credibility to your work.
+                    </p>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-xl hover:shadow-md transition">
+                    <div
+                        class="text-4xl mb-4 bg-white w-12 h-12 flex items-center justify-center rounded-full shadow-sm">
+                        ⏱️</div>
+                    <h3 class="font-bold text-lg text-emerald-800 mb-2">Performance Metrics</h3>
+                    <p class="text-sm text-emerald-900 opacity-80 leading-relaxed">
+                        Measure your inference time. Aim for <strong>under 10 seconds</strong> per generation. If it
+                        takes longer, document your optimization strategy (e.g., model quantization or better GPU
+                        selection).
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 p-6 rounded-xl border-2 border-dashed border-gray-300 text-center">
+                <h4 class="font-bold text-gray-500 mb-2">Future Scope (Post-MVP)</h4>
+                <div class="flex flex-wrap justify-center gap-4 mt-4">
+                    <span class="bg-white px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-600">Video
+                        Try-On (Virtual Walkway)</span>
+                    <span class="bg-white px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-600">Size
+                        Recommendation AI</span>
+                    <span class="bg-white px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-600">In-Store
+                        AR Mirrors</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA STORE ---
+        const featureData = {
+            user: [
+                { icon: "📤", title: "Single-Image Upload", desc: "User uploads full/half-body portrait." },
+                { icon: "👗", title: "Interactive Catalog", desc: "Browse clothing from partner stores." },
+                { icon: "✨", title: "AI Generation Engine", desc: "'Try Now' blends image with garment." },
+                { icon: "🖼️", title: "Result Gallery", desc: "Save, download, or share results." }
+            ],
+            merchant: [
+                { icon: "📦", title: "Garment Management", desc: "Upload high-res flat lay/mannequin photos." },
+                { icon: "📊", title: "Basic Analytics", desc: "Track 'most tried' items & engagement." },
+                { icon: "🏷️", title: "Tagging System", desc: "Categorize: Top, Bottom, Full-body." }
+            ]
+        };
+
+        const flowData = {
+            customer: {
+                goal: "Visualize how a dress looks on them before buying.",
+                steps: [
+                    { title: "1. Onboard", desc: "Create a profile." },
+                    { title: "2. Upload", desc: "Upload reference 'base' photo (following AI guidelines)." },
+                    { title: "3. Select", desc: "Choose a garment from a shop's catalog." },
+                    { title: "4. Generate", desc: "Trigger the AI pipeline." },
+                    { title: "5. Review", desc: "View result, see 'Buy' link to original shop." }
+                ],
+                color: "bg-indigo-50 border-indigo-200",
+                textColor: "text-indigo-700"
+            },
+            merchant: {
+                goal: "Increase conversion rates and reduce returns.",
+                steps: [
+                    { title: "1. Onboard", desc: "Register shop details." },
+                    { title: "2. Inventory", desc: "Upload professional product photos." },
+                    { title: "3. Tagging", desc: "Define clothing category." },
+                    { title: "4. Monitor", desc: "View dashboard (Try-ons vs. Click-throughs)." }
+                ],
+                color: "bg-emerald-50 border-emerald-200",
+                textColor: "text-emerald-700"
+            },
+            admin: {
+                goal: "Platform maintenance and quality control.",
+                steps: [
+                    { title: "1. Review", desc: "Approve/Reject merchant accounts." },
+                    { title: "2. AI Monitoring", desc: "Monitor GPU usage and success rates." },
+                    { title: "3. Templates", desc: "Manage standard 'base models' for users." }
+                ],
+                color: "bg-gray-50 border-gray-200",
+                textColor: "text-gray-700"
+            }
+        };
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderFeatures() {
+            const userContainer = document.getElementById('user-features-list');
+            const merchantContainer = document.getElementById('merchant-features-list');
+
+            featureData.user.forEach(f => {
+                userContainer.innerHTML += `
+                    <div class="flex items-start p-3 rounded-lg hover:bg-indigo-50 transition border border-transparent hover:border-indigo-100 cursor-default group">
+                        <span class="mr-3 text-lg group-hover:scale-110 transition-transform">${f.icon}</span>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-700">${f.title}</h4>
+                            <p class="text-xs text-gray-500">${f.desc}</p>
+                        </div>
+                    </div>`;
+            });
+
+            featureData.merchant.forEach(f => {
+                merchantContainer.innerHTML += `
+                    <div class="flex items-start p-3 rounded-lg hover:bg-emerald-50 transition border border-transparent hover:border-emerald-100 cursor-default group">
+                        <span class="mr-3 text-lg group-hover:scale-110 transition-transform">${f.icon}</span>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-700">${f.title}</h4>
+                            <p class="text-xs text-gray-500">${f.desc}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function setUserRole(role) {
+            // Update buttons styling
+            ['customer', 'merchant', 'admin'].forEach(r => {
+                const btn = document.getElementById(`btn-role-${r}`);
+                if (r === role) {
+                    btn.className = "w-full text-left px-4 py-3 rounded-lg text-sm font-bold bg-white shadow-sm text-indigo-600 border border-indigo-200 transform scale-[1.02] transition-all";
+                } else {
+                    btn.className = "w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-white hover:shadow-sm transition border border-transparent";
+                }
+            });
+
+            // Update Content
+            const data = flowData[role];
+            const container = document.getElementById('flow-content-area');
+
+            let stepsHtml = data.steps.map((s, index) => `
+                <div class="flex items-start relative pb-8 last:pb-0 animate-fade-in" style="animation-delay: ${index * 100}ms">
+                    <div class="flex-shrink-0 h-8 w-8 rounded-full ${data.color.replace('border-', 'bg-').replace('50', '100')} flex items-center justify-center border-2 ${data.color.replace('bg-', 'border-')} z-10 relative shadow-sm">
+                        <span class="${data.textColor} font-bold text-xs">${index + 1}</span>
+                    </div>
+                    <div class="ml-4 min-w-0 flex-1 pt-1">
+                        <h4 class="text-sm font-bold text-gray-900">${s.title.split('. ')[1]}</h4>
+                        <p class="text-xs text-gray-500 mt-1">${s.desc}</p>
+                    </div>
+                    ${index !== data.steps.length - 1 ? '<div class="absolute top-8 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></div>' : ''}
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="${data.color} p-4 rounded-lg mb-6 border border-opacity-50">
+                    <h3 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Goal</h3>
+                    <p class="text-sm text-gray-600 italic mt-1">"${data.goal}"</p>
+                </div>
+                <div class="pl-2">
+                    ${stepsHtml}
+                </div>
+            `;
+        }
+
+        // --- NAVIGATION ---
+        function switchSection(sectionId) {
+            // Hide all sections
+            ['vision', 'users', 'tech', 'business', 'fyp'].forEach(s => {
+                document.getElementById(`section-${s}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${s}`);
+                if (btn) {
+                    btn.classList.remove('active-nav', 'bg-indigo-50', 'text-indigo-700', 'border-indigo-600');
+                    btn.classList.add('text-gray-600');
+                    // Reset styling
+                    btn.style.backgroundColor = '';
+                    btn.style.borderRight = '';
+                }
+            });
+
+            // Show target section with a subtle fade in
+            const target = document.getElementById(`section-${sectionId}`);
+            target.classList.remove('hidden');
+            target.classList.add('animate-fade-in');
+
+            // Highlight nav
+            const activeBtn = document.getElementById(`nav-${sectionId}`);
+            activeBtn.classList.add('active-nav');
+        }
+
+        // --- CHART JS (Revenue Simulator) ---
+        let revenueChart;
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Projected Monthly Revenue'],
+                    datasets: [
+                        {
+                            label: 'SaaS Subscription Fees',
+                            data: [0],
+                            backgroundColor: '#6366f1', // Indigo 500
+                            borderRadius: 4,
+                            barThickness: 50
+                        },
+                        {
+                            label: 'Pay-per-Gen Usage Fees',
+                            data: [0],
+                            backgroundColor: '#2dd4bf', // Teal 400
+                            borderRadius: 4,
+                            barThickness: 50
+                        }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#f3f4f6' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            padding: 12,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            updateRevenue();
+        }
+
+        function updateRevenue() {
+            const shops = parseInt(document.getElementById('slider-shops').value);
+            const avgGens = parseInt(document.getElementById('slider-gens').value);
+            const saasFee = parseFloat(document.getElementById('input-saas').value);
+            const ppgFee = parseFloat(document.getElementById('input-ppg').value);
+
+            // Update UI Labels
+            document.getElementById('val-shops').innerText = `${shops} Shops`;
+            document.getElementById('val-gens').innerText = `${avgGens} Gens/Shop`;
+
+            // Logic: 
+            // 1. SaaS Revenue = Shops * SaaS Fee
+            // 2. PPG Revenue = Shops * (AvgGens - FreeQuota(5)) * Fee. If AvgGens < 5, 0.
+
+            const freeQuota = 5;
+            const billableGens = Math.max(0, avgGens - freeQuota);
+
+            const saasRevenue = shops * saasFee;
+            const ppgRevenue = shops * billableGens * ppgFee;
+            const total = saasRevenue + ppgRevenue;
+
+            // Update DOM Total
+            document.getElementById('total-revenue').innerText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(total);
+
+            // Update Chart
+            revenueChart.data.datasets[0].data = [saasRevenue];
+            revenueChart.data.datasets[1].data = [ppgRevenue];
+            revenueChart.update();
+        }
+
+        // --- CSS ANIMATION INJECTOR ---
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.4s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // --- INITIALIZATION ---
+        window.onload = function () {
+            renderFeatures();
+            setUserRole('customer'); // Default flow
+            initChart();
+        };
+
+    </script>
+</body>
+
+</html>
